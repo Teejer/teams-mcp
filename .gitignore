@@ -98,3 +98,10 @@ public
 # Temporary folders
 tmp/
 temp/ 
+# Local build config (identifiers only, but per-machine)
+deploy/.env
+
+# Auth/token files must NEVER be committed — treat as secrets
+.msgraph-mcp-auth.json
+.teams-mcp-token-cache.json
+

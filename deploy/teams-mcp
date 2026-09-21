@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Host CLI wrapper for the containerized teams-mcp. Point your MCP client's
+# "command" at this script. See README.md for a sample mcpServers config.
+exec "$(dirname "$(readlink -f "$0")")/run.sh" "$@"
