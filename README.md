@@ -9,7 +9,7 @@ Dockerfile and scripts that build a containerized teams-mcp pre-configured for o
 Azure AD app registration, with an isolated file staging directory so agent hosts can
 hand files to the container safely.
 
-## What we added (see `deploy/`)
+## What we added
 
 | File | Purpose |
 |---|---|
@@ -20,6 +20,7 @@ hand files to the container safely.
 | `deploy/patch-client.sh` | Bakes our Azure app registration IDs into the installed package |
 | `deploy/teams-mcp` | Host CLI wrapper we actually invoke |
 | `deploy/.env.example` | Template for the build-time config (copy to `.env`) |
+| `opencode/skills/teams-send-file/SKILL.md` | OpenCode skill teaching agents the outbox file-send workflow |
 | `scripts/set-dns.bat` / `.ps1` | Example: a small ops script sent to Teams via the MCP |
 
 ## Architecture
