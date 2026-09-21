@@ -1,13 +1,14 @@
 # ============================================================
 #  set-dns.ps1
-#  Sets DNS servers to 10.10.1.27 (primary) and 10.10.1.30
+#  Sets DNS servers to 192.0.2.10 (primary) and 192.0.2.11
 #  on ALL active (connected) network adapters, regardless of
 #  their name. Run elevated:
 #    powershell -ExecutionPolicy Bypass -File set-dns.ps1
+#  Edit $Primary/$Secondary to your DNS servers first.
 # ============================================================
 
-$Primary   = '10.10.1.27'
-$Secondary = '10.10.1.30'
+$Primary   = '192.0.2.10'
+$Secondary = '192.0.2.11'
 
 # Requires -RunAsAdministrator fails cleanly if not elevated
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()

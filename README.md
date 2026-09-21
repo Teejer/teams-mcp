@@ -122,11 +122,14 @@ project instructions file.)
 
 ## DNS helper scripts (`scripts/`)
 
-`set-dns.bat` and `set-dns.ps1` set primary/secondary DNS (10.10.1.27 / 10.10.1.30) on
-Windows endpoints. Both require Administrator. The `.bat` targets adapters named
-`Ethernet`/`Wi-Fi`; the `.ps1` auto-detects all connected physical adapters and is the
-recommended version. They contain no credentials or secrets — edit the IP variables at
-the top for your environment.
+`set-dns.bat` and `set-dns.ps1` set primary/secondary DNS on Windows endpoints.
+Both require Administrator. The `.bat` targets adapters named `Ethernet`/`Wi-Fi`;
+the `.ps1` auto-detects all connected physical adapters and is the recommended
+version.
+
+The scripts ship with **documentation IP addresses** (RFC 5737 TEST-NET-1:
+`192.0.2.10` / `192.0.2.11`) — edit the variables at the top of each script
+(`set PRIMARY=...` / `$Primary = ...`) to your real DNS servers before use.
 
 ## Upstream
 

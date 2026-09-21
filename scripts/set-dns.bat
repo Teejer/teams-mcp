@@ -1,13 +1,14 @@
 @echo off
 REM ============================================================
 REM  set-dns.bat
-REM  Sets DNS servers to 10.10.1.27 (primary) and 10.10.1.30
+REM  Sets DNS servers to 192.0.2.10 (primary) and 192.0.2.11
 REM  on all active Ethernet/Wi-Fi network adapters.
+REM  Edit PRIMARY/SECONDARY to your DNS servers first.
 REM  Must be run as Administrator.
 REM ============================================================
 
-set PRIMARY=10.10.1.27
-set SECONDARY=10.10.1.30
+set PRIMARY=192.0.2.10
+set SECONDARY=192.0.2.11
 
 REM --- Check for admin rights ---
 net session >nul 2>&1
