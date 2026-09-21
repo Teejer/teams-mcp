@@ -93,6 +93,22 @@ cp ~/Documents/report.pdf ~/teams-outbox/
 rm ~/teams-outbox/report.pdf
 ```
 
+## OpenCode skill (auto-discoverable workflow)
+
+[`opencode/skills/teams-send-file/SKILL.md`](opencode/skills/teams-send-file/SKILL.md)
+is an OpenCode skill that teaches any agent session the outbox staging workflow
+above, so file sends just work without re-explaining the container paths.
+
+Install it for the current user:
+
+```bash
+mkdir -p ~/.config/opencode/skills
+cp -r opencode/skills/teams-send-file ~/.config/opencode/skills/
+```
+
+(For other MCP clients, the same content works as a system-prompt include or
+project instructions file.)
+
 ## Security notes
 
 - **No secrets are committed to this repo.** `deploy/.env` (git-ignored) holds only
