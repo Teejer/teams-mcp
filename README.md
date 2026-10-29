@@ -5,21 +5,20 @@ Fork of [floriscornel/teams-mcp](https://github.com/floriscornel/teams-mcp) — 
 access (messages, chats, search, users, file uploads).
 
 This fork keeps the upstream source untouched and adds **our deployment tooling**: a
-Dockerfile and scripts that build a containerized teams-mcp pre-configured for our
-Azure AD app registration, with an isolated file staging directory so agent hosts can
-hand files to the container safely.
+Dockerfile and scripts that build a containerized teams-mcp (optionally pointed at
+our Azure AD app registration via runtime env vars), with an isolated file staging
+directory so agent hosts can hand files to the container safely.
 
 ## What we added
 
 | File | Purpose |
 |---|---|
-| `deploy/Dockerfile` | Builds `teams-mcp` image: node:22 + npm package + our Azure client/tenant IDs |
-| `deploy/build.sh` | Builds the image (reads IDs from `.env`) |
-| `deploy/run.sh` | Starts the container with the right bind mounts |
+| `deploy/Dockerfile` | Builds `teams-mcp` image: node:22 + npm package (TZ/version configurable) |
+| `deploy/build.sh` | Builds the image (reads options from `.env`) |
+| `deploy/run.sh` | Starts the container with the right bind mounts; forwards optional client/tenant IDs as runtime env |
 | `deploy/authenticate.sh` | One-time device-code login into the container |
-| `deploy/patch-client.sh` | Bakes our Azure app registration IDs into the installed package |
 | `deploy/teams-mcp` | Host CLI wrapper we actually invoke |
-| `deploy/.env.example` | Template for the build-time config (copy to `.env`) |
+| `deploy/.env.example` | Template for the runtime config (copy to `.env`) |
 | `opencode/skills/teams-send-file/SKILL.md` | OpenCode skill teaching agents the outbox file-send workflow |
 | `scripts/set-dns.bat` / `.ps1` | Example: a small ops script sent to Teams via the MCP |
 
@@ -44,28 +43,52 @@ AI agent host                       teams-mcp container (this image)
 ## Prerequisites
 
 - Docker
-- An Azure AD (Entra ID) **app registration** with the Graph *delegated* permissions
-  listed in [upstream README](#required-microsoft-graph-permissions) (see upstream
-  README section "Required Microsoft Graph Permissions"). Note the **Application
-  (client) ID** and **Directory (tenant) ID**.
-- Public client flow must be enabled (device code flow) — no client secret is used.
+- (Optional) An Azure AD (Entra ID) **app registration** with the Graph
+  *delegated* permissions listed in [upstream README](#required-microsoft-graph-permissions)
+  (see upstream README section "Required Microsoft Graph Permissions"). Note the
+  **Application (client) ID** and **Directory (tenant) ID** and put them in
+  `deploy/.env`. With them unset, everything uses the upstream default (Microsoft
+  Graph CLI app). Public client flow must be enabled if you do register one —
+  no client secret is used.
 
 ## Quick start
 
 ```bash
-# 1. Configure build-time IDs (these are identifiers, not secrets)
+# 1. (Optional) Configure an app registration; unset = upstream default app
 cp deploy/.env.example deploy/.env
-$EDITOR deploy/.env          # set TEAMS_MCP_CLIENT_ID and TEAMS_MCP_TENANT_ID
+$EDITOR deploy/.env          # set TEAMS_MCP_CLIENT_ID / TEAMS_MCP_TENANT_ID
 
 # 2. Build the image
 ./deploy/build.sh            # -> teams-mcp:latest
 
-# 3. Authenticate once (device code flow; tokens persist in bind-mounted files)
+# 3. Authenticate once (device code flow; tokens persist in bind-mounted files).
+#    This uses the SAME deploy/.env values as the server, by design.
 ./deploy/authenticate.sh
 
 # 4. Smoke test
 ./deploy/run.sh check
 ```
+
+## Troubleshooting
+
+- **`Not authenticated` forever despite successful `authenticate`** — the
+  server refreshes tokens only from `~/.teams-mcp-token-cache.json` (the MSAL
+  cache; `~/.msgraph-mcp-auth.json` is CLI metadata the server ignores), and
+  MSAL can only refresh a token with the **same client id** that minted it.
+  Older images baked a client id into the package with a sed patch, so a token
+  minted by an unpatched CLI (or vice versa) could never be refreshed. Fixed
+  by moving to upstream's runtime env vars — make sure `deploy/.env` is
+  identical for `authenticate.sh` and `run.sh` (both source it), and
+  `./deploy/run.sh logout` + re-authenticate after any change.
+- **`teams-mcp check` succeeds but the MCP server still says
+  `Not authenticated`** — expected when the client ids differ (see above);
+  `check` reads the metadata file, the server uses the MSAL cache.
+- **Server exits immediately with code 137 / EISDIR** — a bind-mount source
+  (`~/.teams-mcp-token-cache.json`) is missing or a directory; `run.sh`
+  `touch`es both files, don't delete them by hand.
+- Tool calls failing with `Unexpected non-whitespace character after JSON at
+  position …` — that was the pre-1.0 image throwing on every call while
+  unauthenticated; rebuilding from this repo fixes it.
 
 ## Point your MCP client at it
 
